@@ -33,14 +33,21 @@ module LoremIpsum =
     
 module ``The last line`` =
 
-    let splitLines (str: string) = str.Split('\n')
+    let splitLines (str: string) = str.Split('\n') 
+    let countWordsAndSpaces (line:string) =
+        let wordCount = line.Split([|' '|], System.StringSplitOptions.RemoveEmptyEntries) |> Seq.length
+        let spaceCount = line |> Seq.filter ((=) ' ') |> Seq.length
+        wordCount, spaceCount
 
 //    [<Property>]
     [<Property(Arbitrary=[|typeof<Generators>|])>]
     let ``Has only one space in between words`` (text: RandomParagraph) =
+        let ``spaces are one less than words`` (words, spaces) = spaces = words - 1
+
         text.Get
         |> Justified.Justify
         |> splitLines
-        |> Seq.length
-        |> (=) 3
+        |> Seq.last
+        |> countWordsAndSpaces
+        |> ``spaces are one less than words``
 

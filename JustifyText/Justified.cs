@@ -4,7 +4,7 @@
     {
         public static string Justify(string unjustified)
         {
-            return "";
+            return unjustified;
         }
     }
 }
