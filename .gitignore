@@ -11,3 +11,5 @@ tests/
 .fake/
 *.DotSettings.user
 .vs/
+
+TestResult.xml

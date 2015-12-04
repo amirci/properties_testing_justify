@@ -1,5 +1,2 @@
-Xunit
-Xunit.extensions
-Xunit.runners
 fscheck
-fscheck.xunit
+fscheck.nunit

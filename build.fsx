@@ -5,8 +5,6 @@ open Fake
 
 [<AutoOpen>]
 module Config =
-    let testDir = "./"
-    let srcDir  = "./"
     let prjName = "JustifyText"
     let mainSln = prjName + ".sln"
     let testPrj = prjName + ".Tests"
@@ -37,8 +35,8 @@ Target "Build" (fun _ ->
 )
 
 Target "Test" (fun _ ->
-  !! (testDir @@ "/*.Tests.dll")
-  |> xUnit (fun p -> {p with ToolPath = "packages/xunit.runners/tools/xunit.console.clr4.exe"})
+  !! (testPrj @@ "**" @@ "*.Tests.dll")
+  |> NUnit id
 )
 
 "Build"
