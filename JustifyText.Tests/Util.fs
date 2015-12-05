@@ -34,13 +34,16 @@ module Util =
             |> Arb.fromGen
             
     let splitLines (str: string) = str.Split('\n') 
+    let toWords (str:string) = str.Split([|' '|], System.StringSplitOptions.RemoveEmptyEntries)
+    
     let countWordsAndSpaces (line:string) =
-        let wordCount = line.Split([|' '|], System.StringSplitOptions.RemoveEmptyEntries) |> Seq.length
+        let wordCount  = line |> toWords |> Seq.length
         let spaceCount = line |> Seq.filter ((=) ' ') |> Seq.length
         wordCount, spaceCount
     
     let isWordChar = (<>) ' '
     let countChars (str:string) = str |> Seq.filter isWordChar |> Seq.length
+    let countWithSingleSpace words = (words |> Array.sumBy String.length) + words.Length - 1
     
     let length = 30
     let justify (text:RandomParagraph) = 
