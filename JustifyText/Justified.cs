@@ -2,7 +2,7 @@
 {
     public class Justified
     {
-        public static string Justify(string unjustified)
+        public static string Justify(int width, string unjustified)
         {
             return unjustified;
         }

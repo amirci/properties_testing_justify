@@ -57,12 +57,13 @@
   </Target>
   -->
   <ItemGroup>
+    <Compile Include="Util.fs" />
     <Compile Include="FsCheckAddin.fs">
       <Paket>True</Paket>
     </Compile>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="JustifyText.fs" />
     <None Include="paket.references" />
+    <Compile Include="JustifyText.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FsCheck">
