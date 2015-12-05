@@ -50,3 +50,5 @@ module Util =
     let all (lines:seq<string>, line:string) = lines |> Seq.append [line]
     let concatWords words = String.concat " " words
 
+    type JustifyPropertyAttribute() =
+        inherit PropertyAttribute( Arbitrary = [| typeof<Generators> |], QuietOnSuccess = true)
