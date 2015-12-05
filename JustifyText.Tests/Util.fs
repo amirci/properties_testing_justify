@@ -39,6 +39,9 @@ module Util =
         let spaceCount = line |> Seq.filter ((=) ' ') |> Seq.length
         wordCount, spaceCount
     
+    let isWordChar = (<>) ' '
+    let countChars (str:string) = str |> Seq.filter isWordChar |> Seq.length
+    
     let length = 30
     let justify (text:RandomParagraph) = 
         let lines = Justified.Justify(length, text.Get) |> splitLines

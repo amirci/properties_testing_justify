@@ -16,29 +16,28 @@ module ``The justified text`` =
         |> concatLines
         |> replaceMultipleSpaces
         |> (=) text.Get
-
-module ``Each line of the justified body`` =
-    let ``starts and ends with a word`` line = Regex.Match(line, "^[^ ].*[^ ]$").Success
-    
-    [<JustifyProperty>]
-    let ``Starts and ends with a word`` (text: RandomParagraph) =
-        text
-        |> justify
-        |> body
-        |> Seq.forall ``starts and ends with a word``
-
-module ``The last line`` =
-    let ``spaces are one less than words`` (words, spaces) = spaces = words - 1
-    let isWordChar = (<>) ' '
-    let countChars = Seq.filter isWordChar >> Seq.length
-
+   
+module ``Every line of the justified text`` = 
     [<JustifyProperty>]
     let ``Is shorter than the max width`` (text: RandomParagraph) =
         text 
         |> justify
-        |> lastLine
-        |> countChars
-        |> (>=) length
+        |> all
+        |> Seq.forall (countChars >> (>=) length)
+
+    [<JustifyProperty>]
+    let ``Starts and ends with a word`` (text: RandomParagraph) =
+        let ``starts and ends with a word`` line = Regex.Match(line, "^[^ ].*[^ ]$").Success
+        text
+        |> justify
+        |> all
+        |> Seq.forall ``starts and ends with a word``
+
+//module ``Each line of the justified body`` =
+
+
+module ``The last line`` =
+    let ``spaces are one less than words`` (words, spaces) = spaces = words - 1
 
     [<JustifyProperty>]
     let ``Has only one space in between words`` (text: RandomParagraph) =
