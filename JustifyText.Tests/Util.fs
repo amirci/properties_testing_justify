@@ -16,7 +16,8 @@ module LoremIpsum =
         """
 
     let words = 
-        let splitChars = [|'\n';','; '.'; ' '; ';'|]
+//        let splitChars = [|'\n';','; '.'; ' '; ';'|]
+        let splitChars = [|'\n';'\r'; ' '|]
         paragraphs.Split(splitChars, System.StringSplitOptions.RemoveEmptyEntries) 
 
 [<AutoOpen>]
@@ -43,12 +44,13 @@ module Util =
         let lines = Justified.Justify(length, text.Get) |> splitLines
         match lines.Length with
         | 1   -> Seq.empty, lines.[0]
-        | len -> lines |> Seq.take (max 0 len - 2), lines.[len-1]
+        | len -> lines |> Seq.take (max 0 len - 1), lines.[len-1]
 
     let lastLine = snd
     let body = fst
-    let all (lines:seq<string>, line:string) = lines |> Seq.append [line]
+    let all (lines:seq<string>, line:string) = [line] |> Seq.append lines
     let concatWords words = String.concat " " words
+    let concatLines = concatWords
 
     type JustifyPropertyAttribute() =
         inherit PropertyAttribute( Arbitrary = [| typeof<Generators> |], QuietOnSuccess = true)

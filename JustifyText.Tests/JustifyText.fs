@@ -13,12 +13,12 @@ module ``The justified text`` =
         text
         |> justify
         |> all
+        |> concatLines
         |> replaceMultipleSpaces
-        |> concatWords
         |> (=) text.Get
 
 module ``Each line of the justified body`` =
-    let ``starts and ends with a word`` line = Regex.Match(line, "^\w.*\w$").Success
+    let ``starts and ends with a word`` line = Regex.Match(line, "^[^ ].*[^ ]$").Success
     
     [<JustifyProperty>]
     let ``Starts and ends with a word`` (text: RandomParagraph) =
@@ -29,6 +29,16 @@ module ``Each line of the justified body`` =
 
 module ``The last line`` =
     let ``spaces are one less than words`` (words, spaces) = spaces = words - 1
+    let isWordChar = (<>) ' '
+    let countChars = Seq.filter isWordChar >> Seq.length
+
+    [<JustifyProperty>]
+    let ``Is shorter than the max width`` (text: RandomParagraph) =
+        text 
+        |> justify
+        |> lastLine
+        |> countChars
+        |> (>=) length
 
     [<JustifyProperty>]
     let ``Has only one space in between words`` (text: RandomParagraph) =
