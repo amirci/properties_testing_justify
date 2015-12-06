@@ -39,26 +39,26 @@ module ``Each line of the justified body`` =
     [<JustifyProperty>]
     let ``Can not fit another word`` (text: RandomParagraph) =
         let toPairs lines = lines |> Seq.skip 1 |> Seq.zip lines
-        let isMax (line, next) = 
-            let firstWord = (Regex("\\S+").Match(next).Value |> Seq.length) + 1
-            (line |> toWords |> countWithSingleSpace) + firstWord > length
+        let wontFitAnother (line, next) = 
+            let firstWord = (next |> toWords).[0]  |> String.length |> (+) 1
+            line |> toWords |> totalWithSpaces |> (+) firstWord > length
 
         text 
         |> justify 
         |> all
         |> toPairs
-        |> Seq.forall isMax
+        |> Seq.forall wontFitAnother
 
 module ``The last line`` =
-    let ``spaces are one less than words`` (words, spaces) = spaces = words - 1
 
     [<JustifyProperty>]
     let ``Has only one space in between words`` (text: RandomParagraph) =
+        let ``has only one space between words`` (line:string) = line.Split(' ') |> Seq.forall ((<>) "")
+            
         text
         |> justify
         |> lastLine
-        |> countWordsAndSpaces
-        |> ``spaces are one less than words``
+        |> ``has only one space between words``
 
     [<JustifyProperty>]
     let ``Fits the max width`` (text: RandomParagraph) =

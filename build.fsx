@@ -35,8 +35,8 @@ Target "Build" (fun _ ->
 )
 
 Target "Test" (fun _ ->
-  !! (testPrj @@ "**" @@ "*.Tests.dll")
-  |> NUnit id
+  !! (testPrj @@ "bin" @@ "debug" @@ "*.Tests.dll")
+  |> NUnit (fun p -> {p with ToolPath="packages/NUnit.Runners/tools"})
 )
 
 "Build"
