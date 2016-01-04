@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace JustifyText
@@ -10,33 +11,48 @@ namespace JustifyText
         {
             var words = unjustified.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
 
-            var justified = CreateLine(width, words, 0);
-
-            return justified;
+            return CreateLines(width, words);
         }
 
-        private static string CreateLine(int width, string[] words, int i)
+        private static Tuple<IReadOnlyCollection<string>, IReadOnlyCollection<string>> NextLine(IEnumerable<string> text, int width)
         {
-            if (i >= words.Length) return "";
-
             var line = new List<string>();
-            var count = 0;
-            Predicate<string> canFit = word => count + line.Count + word.Length <= width;
-            Func<bool> isTheLastLine = () => i == words.Length;
-            
-            while (i < words.Length && canFit(words[i]) )
+
+            var fitsAnotherWord = new Func<string, bool>(word =>
             {
-                line.Add(words[i]);
-                count += words[i].Length;
-                i++;
-            }
+                var wc = line.Count;
 
-            var justified = isTheLastLine() ? string.Join(" ", line) : AdjustSpaces(line, width) + "\n";
+                line.Insert(0, word);
 
-            return justified + CreateLine(width, words, i);
+                return wc * 2 + word.Length <= width;
+            });
+
+            var rest = (IReadOnlyCollection<string>) text.SkipWhile(fitsAnotherWord).ToList();
+            var roLine = (IReadOnlyCollection<string>) line;
+
+            return Tuple.Create(roLine, rest);
         }
 
-        private static string AdjustSpaces(List<string> words, int width)
+        private static string CreateLines(int width, IReadOnlyCollection<string> words)
+        {
+            if (words.Count == 0) return "";
+
+            var nextLineInfo = NextLine(words, width);
+
+            var line = nextLineInfo.Item1;
+            var rest = nextLineInfo.Item2;
+
+            var justified = rest.Count == 0 ? AddOneSpaceBetweenWords(line) : AdjustSpaces(line, width) + "\n";
+
+            return justified + CreateLines(width, rest);
+        }
+
+        private static string AddOneSpaceBetweenWords(IEnumerable<string> words)
+        {
+            return string.Join(" ", words);
+        }
+
+        private static string AdjustSpaces(IEnumerable<string> words, int width)
         {
             var line = string.Join(" ", words);
 
