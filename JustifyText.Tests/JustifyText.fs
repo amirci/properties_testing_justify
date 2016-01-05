@@ -5,17 +5,14 @@ open FsCheck.NUnit
 open JustifyText
 open System.Text.RegularExpressions
 open Util
+open Swensen.Unquote
 
 module ``The justified text`` = 
-    let replaceMultipleSpaces str = Regex("\\s+").Replace(str, " ")
     [<JustifyProperty>]
     let ``Has the same words as the unjustified`` (text: RandomParagraph) =
-        text
-        |> justify
-        |> all
-        |> concatLines
-        |> replaceMultipleSpaces
-        |> (=) text.Get
+        let replaceMultipleSpaces str = Regex("\\s+").Replace(str, " ")
+        let actual = text |> justify |> all |> concatLines |> replaceMultipleSpaces 
+        actual =! text.Get
    
 module ``Every line of the justified text`` = 
 
@@ -31,11 +28,30 @@ module ``Every line of the justified text`` =
 module ``Each line of the justified body`` =
     [<JustifyProperty>]
     let ``Has the max width`` (text: RandomParagraph) =
-        text
-        |> justify
-        |> body
-        |> Seq.forall (String.length >> (=) length)
+        let lines = text |> justify |> body 
+        let lengths = lines |> Seq.map String.length |> List.ofSeq
+        lengths =! List.init (lines |> Seq.length) (fun _ -> length)
+       
+    [<JustifyProperty>]
+    let ``Large gaps go first then from smaller`` (text:RandomParagraph) =
+        let spaces = Regex("\\s+").Matches(text.Get)
+        let gaps = [for space in spaces -> space.Length]
+        gaps = (gaps |> List.sort |> List.rev)
+    
+    [<JustifyProperty>]
+    let ``The space gaps have at most difference of one`` (text:RandomParagraph) =
+        let lines = text |> justify |> body
         
+        let actual = 
+            let findGaps line = [for g in Regex("\\s+").Matches(line) -> g.Value]
+            lines |> Seq.map (findGaps >> List.map String.length >> Seq.distinct >> List.ofSeq) |> List.ofSeq
+        
+        let expected = 
+            let expectedGaps = function | a::b::[] -> a::(a-1)::[] | l -> l
+            actual |> List.map expectedGaps
+
+        expected =! actual
+
     [<JustifyProperty>]
     let ``Can not fit another word`` (text: RandomParagraph) =
         let toPairs lines = lines |> Seq.skip 1 |> Seq.zip lines
