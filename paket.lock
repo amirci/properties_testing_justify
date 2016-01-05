@@ -11,3 +11,4 @@ NUGET
     FSharp.Core (4.0.0.1)
     NUnit (3.0.1)
     NUnit.Runners (2.6.4)
+    Unquote (3.1.0)

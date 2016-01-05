@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace JustifyText
 {
@@ -14,51 +13,79 @@ namespace JustifyText
             return CreateLines(width, words);
         }
 
-        private static Tuple<IReadOnlyCollection<string>, IReadOnlyCollection<string>> NextLine(IEnumerable<string> text, int width)
+        private static Tuple<IReadOnlyCollection<string>, IReadOnlyCollection<string>, int> TakeLine(IReadOnlyCollection<string> text, int width)
         {
             var line = new List<string>();
+            var charCount = 0;
 
             var fitsAnotherWord = new Func<string, bool>(word =>
             {
-                var wc = line.Count;
+                var spaces = line.Count;
 
-                line.Insert(0, word);
+                var fitsAnother = charCount + word.Length + spaces <= width;
 
-                return wc * 2 + word.Length <= width;
+                if (fitsAnother)
+                {
+                    line.Add(word);
+                    charCount += word.Length;
+                }
+
+                return fitsAnother;
             });
 
-            var rest = (IReadOnlyCollection<string>) text.SkipWhile(fitsAnotherWord).ToList();
-            var roLine = (IReadOnlyCollection<string>) line;
+            var rest = text.SkipWhile(fitsAnotherWord).ToList();
 
-            return Tuple.Create(roLine, rest);
+            return Tuple.Create((IReadOnlyCollection<string>) line,
+                (IReadOnlyCollection<string>) rest,
+                charCount);
         }
 
         private static string CreateLines(int width, IReadOnlyCollection<string> words)
         {
             if (words.Count == 0) return "";
 
-            var nextLineInfo = NextLine(words, width);
+            var info = TakeLine(words, width);
 
-            var line = nextLineInfo.Item1;
-            var rest = nextLineInfo.Item2;
+            var line = info.Item1;
+            var rest = info.Item2;
+            var charCount = info.Item3;
 
-            var justified = rest.Count == 0 ? AddOneSpaceBetweenWords(line) : AdjustSpaces(line, width) + "\n";
+            var justified = rest.IsEmpty() 
+                ? OneSpaceBetween(line) 
+                : DistributeSpaces(line, width, charCount);
 
             return justified + CreateLines(width, rest);
         }
 
-        private static string AddOneSpaceBetweenWords(IEnumerable<string> words)
+        private static string OneSpaceBetween(IEnumerable<string> words)
         {
             return string.Join(" ", words);
         }
 
-        private static string AdjustSpaces(IEnumerable<string> words, int width)
+        private static string DistributeSpaces(IReadOnlyCollection<string> words, int width, int charCount)
         {
-            var line = string.Join(" ", words);
+            if (words.Count == 1) return words.First();
 
-            var spaceLeft = Math.Max(0, width - line.Length) + 1;
+            int reminder;
+            var totalSpaces = width - charCount;
+            var div = Math.DivRem(totalSpaces, words.Count - 1, out reminder) ;
+            var spaces = new string(' ', div);
+            Func<string> extra = () => reminder-- > 0 ? " " : string.Empty;
 
-            return new Regex("\\s+").Replace(line, new string(' ', spaceLeft), 1);
+            return words.Aggregate((line, word) => line + spaces + extra() + word) + "\n";
+        }
+    }
+
+    public static class EnumerableExtensions
+    {
+        public static bool IsEmpty<T>(this IReadOnlyCollection<T> collection)
+        {
+            return collection.Count == 0;
+        }
+
+        public static int SumBy<T>(this IEnumerable<T> collection, Func<T, int> projection)
+        {
+            return collection.Aggregate(0, (acc, e) => acc + projection(e));
         }
     }
 }

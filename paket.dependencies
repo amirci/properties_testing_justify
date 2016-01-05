@@ -4,3 +4,4 @@ nuget fake
 nuget fscheck 
 nuget fscheck.nunit 
 nuget nunit.runners = 2.6.4
+nuget unquote
